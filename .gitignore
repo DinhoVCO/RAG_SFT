@@ -1,0 +1,55 @@
+# Ignorar la carpeta data/
+datasets/
+models/
+results/
+vector_stores/
+# Entornos virtuales
+venv/
+env/
+.venv/
+.env/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de log y bases de datos
+*.log
+*.sqlite3
+
+# Archivos de configuración de usuario
+*.env
+*.local
+*.DS_Store
+
+# Archivos de Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Carpetas de herramientas de desarrollo
+.idea/
+.vscode/
+
+# Distribución y empaquetado
+build/
+dist/
+*.egg-info/
+
+# Cachés de herramientas
+pip-wheel-metadata/
+*.egg
+.eggs/
+.cache/
+.mypy_cache/
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+# Archivos de configuración específicos
+*.ini
+*.cfg
+*.toml
+
+# Archivos de lock
+poetry.lock
+Pipfile.lock

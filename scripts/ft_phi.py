@@ -1,0 +1,158 @@
+import os
+import sys
+sys.path.append('../src')
+import argparse
+from datasets import load_dataset
+from peft import LoraConfig
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    TrainingArguments,
+)
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from prompts.format_prompt import get_prompt_for_train_phi
+from dotenv import load_dotenv
+import wandb
+from vector_stores.faiss import VectorStoreFaiss
+from sentence_transformers import SentenceTransformer
+import torch
+from peft import get_peft_model
+
+#5e 10bs
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Fine-tune Phi-2 model with LoRA.")
+    parser.add_argument('--batch_size', type=int, required=True, help='Batch size for training')
+    parser.add_argument('--model_name', type=str, default='microsoft/phi-2', help='Pretrained model name')
+    parser.add_argument('--new_model_name', type=str, default='phi-2-3GPP-RAG-ft' , help='Name for the fine-tuned model')
+    parser.add_argument('--dataset_name', type=str, default='DinoStackAI/3GPP-QA-MultipleChoice', help='Name for the dataset for training')
+    parser.add_argument('--include_docs', action='store_true', help='Use RAG?')
+    parser.add_argument('--top_k', type=int, default=2, help='Use retrieval top-k documents')
+    parser.add_argument("--vector_store_path", type=str, default=None, help="Path to the FAISS vector store")
+    parser.add_argument('--save_path', type=str, required=True, help='Path to save the fine-tuned model')
+    parser.add_argument('--num_epochs', type=int, required=True, help='Number of training epochs')
+    parser.add_argument("--emb_model", type=str, default="", help="Name of the embedding model")
+    args = parser.parse_args()
+    return args
+    
+
+def add_relevant_docs(dataset, include_docs=False, vector_store=None, top_k=4, batch_size=8):
+    if(include_docs):
+        retrieval_docs= vector_store.buscar_por_batches(dataset['question'], top_k=top_k, batch_size=batch_size)
+        relevant_documents=[]
+        for docs in retrieval_docs:
+            relevant_documents.append(docs[0])
+        dataset = dataset.add_column("relevant_documents", relevant_documents)
+    new_dataset = dataset.map(lambda row: {'text': get_full_promt(row, True, include_docs)})
+    return new_dataset
+
+    
+def load_and_prepare_dataset_for_training(dataset_name, include_docs, vector_store, top_k=2, batch_size=8):
+    train_dataset = load_dataset(dataset_name, split='train')
+    train_dataset = add_relevant_docs(train_dataset, include_docs, vector_store)
+    return train_dataset
+
+def load_model_and_tokenizer(model_name):
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        trust_remote_code=True,
+        low_cpu_mem_usage=True,
+        device_map={"": 0},
+    )
+    model.config.use_cache = False
+    model.config.pretraining_tp = 1
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    tokenizer.pad_token = tokenizer.eos_token
+    return model, tokenizer
+
+def configure_lora():
+    return LoraConfig(
+        r=32,
+        lora_alpha=32,
+        target_modules=["Wqkv", "fc1", "fc2"],
+        bias="none",
+        lora_dropout=0.05,
+        task_type="CAUSAL_LM",
+    )
+
+def configure_training_arguments(output_dir, batch_size, num_epochs):
+    return TrainingArguments(
+        output_dir=output_dir,
+        num_train_epochs=num_epochs,
+        fp16=True,
+        bf16=False,
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size,
+        gradient_accumulation_steps=4,
+        gradient_checkpointing=True,
+        max_grad_norm=0.3,
+        learning_rate=2e-4,
+        weight_decay=0.001,
+        optim="paged_adamw_32bit",
+        lr_scheduler_type="cosine",
+        max_steps=-1,
+        warmup_ratio=0.03,
+        group_by_length=True,
+        save_steps=0,
+        logging_steps=25,
+        report_to="wandb",
+    )
+
+def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,train_dataset_name,include_docs,top_k, vector_store_path, embedding_model):
+    if(include_docs):
+        vector_store = VectorStoreFaiss.load_local(embedding_model, vector_store_path)
+    else:
+        vector_store=None
+    print("Generating dataset")
+    dataset = load_and_prepare_dataset_for_training(train_dataset_name, include_docs, vector_store,top_k, 8)
+    print("Loading model")
+    model, tokenizer = load_model_and_tokenizer(model_name)
+    peft_config = configure_lora()
+    #total_params = calculate_trainable_lora_params_peft(model, peft_config)
+
+    collator = DataCollatorForCompletionOnlyLM("Output:", tokenizer=tokenizer)
+
+    training_arguments = configure_training_arguments(
+        os.path.join(save_path, new_model_name), batch_size, num_epochs
+    )
+    print("Training")
+    trainer = SFTTrainer(
+        model=model,
+        train_dataset=dataset,
+        args=training_arguments,
+        peft_config=peft_config,
+        data_collator=collator,
+    )
+    
+    trainer.train()
+    trainer.model.save_pretrained(os.path.join(save_path, new_model_name))
+    trainable_params = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
+    print(f"Parámetros entrenables finales: {trainable_params}")
+
+def main():
+    args = parse_args()
+    load_dotenv()
+    wandb.login() 
+    wandb.init(
+        project="SBBD_phi-2-adapters",
+        name=args.new_model_name,
+    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Usando dispositivo: {device}")
+    embedding_model = SentenceTransformer(args.emb_model, device=device)
+
+    train_model(
+        batch_size=args.batch_size,
+        model_name=args.model_name,
+        new_model_name=args.new_model_name,
+        save_path=args.save_path,
+        num_epochs=args.num_epochs,
+        train_dataset_name=args.dataset_name,
+        include_docs = args.include_docs,
+        top_k =args.top_k,
+        vector_store_path = args.vector_store_path,
+        embedding_model = embedding_model
+    )
+
+if __name__ == "__main__":
+    main()
