@@ -10,7 +10,7 @@ from transformers import (
     TrainingArguments,
 )
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
-from prompts.format_prompt import get_prompt_for_train_phi
+from utils.data_for_train_phi import get_dataset_for_train_phi
 from dotenv import load_dotenv
 import wandb
 from vector_stores.faiss import VectorStoreFaiss
@@ -23,34 +23,16 @@ from peft import get_peft_model
 def parse_args():
     parser = argparse.ArgumentParser(description="Fine-tune Phi-2 model with LoRA.")
     parser.add_argument('--batch_size', type=int, required=True, help='Batch size for training')
-    parser.add_argument('--model_name', type=str, default='microsoft/phi-2', help='Pretrained model name')
     parser.add_argument('--new_model_name', type=str, default='phi-2-3GPP-RAG-ft' , help='Name for the fine-tuned model')
-    parser.add_argument('--dataset_name', type=str, default='DinoStackAI/3GPP-QA-MultipleChoice', help='Name for the dataset for training')
+    parser.add_argument('--dataset_name', type=str, required=True, help='Name for the dataset for training( covid, teleqna, coolq')
     parser.add_argument('--include_docs', action='store_true', help='Use RAG?')
-    parser.add_argument('--top_k', type=int, default=2, help='Use retrieval top-k documents')
+    parser.add_argument('--top_k', type=int, required=True, help='Use retrieval top-k documents')
     parser.add_argument("--vector_store_path", type=str, default=None, help="Path to the FAISS vector store")
     parser.add_argument('--save_path', type=str, required=True, help='Path to save the fine-tuned model')
     parser.add_argument('--num_epochs', type=int, required=True, help='Number of training epochs')
-    parser.add_argument("--emb_model", type=str, default="", help="Name of the embedding model")
+    parser.add_argument("--emb_model", type=str, default="", help="Name or Path of the embedding model")
     args = parser.parse_args()
     return args
-    
-
-def add_relevant_docs(dataset, include_docs=False, vector_store=None, top_k=4, batch_size=8):
-    if(include_docs):
-        retrieval_docs= vector_store.buscar_por_batches(dataset['question'], top_k=top_k, batch_size=batch_size)
-        relevant_documents=[]
-        for docs in retrieval_docs:
-            relevant_documents.append(docs[0])
-        dataset = dataset.add_column("relevant_documents", relevant_documents)
-    new_dataset = dataset.map(lambda row: {'text': get_full_promt(row, True, include_docs)})
-    return new_dataset
-
-    
-def load_and_prepare_dataset_for_training(dataset_name, include_docs, vector_store, top_k=2, batch_size=8):
-    train_dataset = load_dataset(dataset_name, split='train')
-    train_dataset = add_relevant_docs(train_dataset, include_docs, vector_store)
-    return train_dataset
 
 def load_model_and_tokenizer(model_name):
     model = AutoModelForCausalLM.from_pretrained(
@@ -93,7 +75,8 @@ def configure_training_arguments(output_dir, batch_size, num_epochs):
         max_steps=-1,
         warmup_ratio=0.03,
         group_by_length=True,
-        save_steps=0,
+        save_steps=100,
+        save_total_limit=2,
         logging_steps=25,
         report_to="wandb",
     )
@@ -104,16 +87,17 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
     else:
         vector_store=None
     print("Generating dataset")
-    dataset = load_and_prepare_dataset_for_training(train_dataset_name, include_docs, vector_store,top_k, 8)
+    print(f"Using k = {top_k} passages")
+    dataset = get_dataset_for_train_phi(train_dataset_name, include_docs, vector_store,top_k, 8)
+    print("Example")
+    print(dataset[0]['text'])
     print("Loading model")
     model, tokenizer = load_model_and_tokenizer(model_name)
     peft_config = configure_lora()
-    #total_params = calculate_trainable_lora_params_peft(model, peft_config)
-
     collator = DataCollatorForCompletionOnlyLM("Output:", tokenizer=tokenizer)
-
+    output_dir = os.path.join(save_path, new_model_name)
     training_arguments = configure_training_arguments(
-        os.path.join(save_path, new_model_name), batch_size, num_epochs
+       output_dir, batch_size, num_epochs
     )
     print("Training")
     trainer = SFTTrainer(
@@ -123,9 +107,15 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
         peft_config=peft_config,
         data_collator=collator,
     )
-    
-    trainer.train()
-    trainer.model.save_pretrained(os.path.join(save_path, new_model_name))
+    checkpoints = [d for d in os.listdir(output_dir) if d.startswith("checkpoint-")] if os.path.exists(output_dir) else []
+    if checkpoints:
+        print("🔵 Checkpoints detected. Resuming training from the last one.")
+        print(checkpoints)
+        trainer.train(resume_from_checkpoint=True)
+    else:
+        print("🟢 No checkpoints found. Starting training from scratch.")
+        trainer.train()
+    trainer.model.save_pretrained(os.path.join(save_path, "final"+new_model_name))
     trainable_params = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
     print(f"Parámetros entrenables finales: {trainable_params}")
 
@@ -140,10 +130,9 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Usando dispositivo: {device}")
     embedding_model = SentenceTransformer(args.emb_model, device=device)
-
     train_model(
         batch_size=args.batch_size,
-        model_name=args.model_name,
+        model_name='microsoft/phi-2',
         new_model_name=args.new_model_name,
         save_path=args.save_path,
         num_epochs=args.num_epochs,

@@ -5,7 +5,7 @@ import pandas as pd
 import random
 
 template_RAG = Template(
-    "Instruct: Use the context provided to select the correct option. Select the correct option from $valid_options. Respond only with the letter of the correct option.\n"
+    "Instruct: Use the context provided below to answer the question. Select the correct option from $valid_options. Respond only with the the correct option. Do not include any explanations.\n"
     "Context:\n$explanation\n\n"
     "Question:\n$question\n\n"
     "Options:\n$options\n\n"
@@ -13,13 +13,13 @@ template_RAG = Template(
 )
 
 template_base = Template(
-    "Instruct: Answer the following question by selecting the correct option. Select the correct option from $valid_options. Respond only with the letter of the correct option.\n"
+    "Instruct: Answer the following question by selecting the correct option. Select the correct option from $valid_options. Respond only with the the correct option. Do not include any explanations.\n"
     "Question:\n$question\n\n"
     "Options:\n$options\n\n"
     "Output:"
 )
 
-def format_input_context_teleqna(row, context=None, abbreviations=None):
+def format_input_context_teleqna(row, context=None):
     question_text = row['question'] 
     options_dict = {
         'A': row['A'],
@@ -45,7 +45,7 @@ def format_input_context_teleqna(row, context=None, abbreviations=None):
             options=options_text
         )
 
-    return input_text, valid_options
+    return input_text
 
 def get_full_promt_teleqna(row, include_docs=True):
     def get_answer(row):
@@ -66,6 +66,6 @@ def get_full_promt_teleqna(row, include_docs=True):
     context = None
     if(include_docs):
         context = get_context(row)
-    question = format_input_context_teleqna(row, context)[0]
+    question = format_input_context_teleqna(row, context)
     answer = get_answer(row)
     return f"{question}\n{answer}"

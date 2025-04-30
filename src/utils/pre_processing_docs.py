@@ -7,7 +7,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 def split_documents(raw_documents:List[Document], text_splitter:TextSplitter) -> List[Document] :
     processed_docs = []
     for doc in tqdm(raw_documents):
-        #Eliminando las primeras 2 paginas
         processed_docs += text_splitter.split_documents([doc])
     return processed_docs
 

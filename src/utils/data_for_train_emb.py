@@ -148,6 +148,42 @@ def get_passages_for_boolq():
     print("Datasets loaded and prepared.")
     return train_dataset, val_dataset, test_dataset
 
+
+
+# def get_passages_for_boolq():
+#     def add_id(example, idx):
+#         return {"id": idx}
+#     print("Loading and preparing datasets...")
+#     DATASET_NAME = 'google/boolq'
+#     dataset= load_dataset(DATASET_NAME)
+#     temp_dataset = dataset['train'].train_test_split(test_size=0.20, seed=42)
+#     train_dataset = temp_dataset['train']
+#     train_dataset = train_dataset.map(add_id, with_indices=True)
+#     train_dataset = train_dataset.select_columns(['id', 'question', 'passage'])
+#     train_dataset = train_dataset.rename_columns({
+#         "id": "q_id",
+#         "question": "question",
+#         "passage": "relevant_docs"
+#     })
+#     val_dataset = temp_dataset['test']
+#     val_dataset = val_dataset.map(add_id, with_indices=True)
+#     val_dataset = val_dataset.select_columns(['id', 'question', 'passage'])
+#     val_dataset = val_dataset.rename_columns({
+#         "id": "q_id",
+#         "question": "question",
+#         "passage": "relevant_docs"
+#     })
+#     test_dataset = dataset['validation']
+#     test_dataset = test_dataset.map(add_id, with_indices=True)
+#     test_dataset = test_dataset.select_columns(['id', 'question', 'passage'])
+#     test_dataset = test_dataset.rename_columns({
+#         "id": "q_id", 
+#         "question": "question", 
+#         "passage": "relevant_docs"
+#     })
+#     print("Datasets loaded and prepared.")
+#     return train_dataset, val_dataset, test_dataset
+
 def get_passages_for_covid():
     
     def get_full_window(context, answer_start, window_size=150):
