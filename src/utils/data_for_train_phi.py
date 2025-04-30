@@ -16,6 +16,7 @@ def get_dataset_for_train_phi(dataset_name, include_docs=False, vector_store=Non
     elif(dataset_name=="boolq"):
         return get_dataset_for_training_boolq(train_dataset, include_docs, vector_store, top_k, batch_size)
     elif(dataset_name=="covid"):
+        print(f"Creating dataset for {dataset_name}")
         return get_dataset_for_training_covid(train_dataset, include_docs, vector_store, top_k, batch_size)
     else:
         raise ValueError(f"Incorrect dataset name: {dataset_name}")
@@ -52,6 +53,8 @@ def get_dataset_for_training_boolq(dataset, include_docs, vector_store, top_k, b
     if(include_docs):
         dataset= add_relevant_docs(dataset, vector_store, top_k, batch_size) 
     final_dataset = final_dataset_for_training(dataset, get_full_promt_boolq, include_docs)
+    print("Example initial")
+    print(final_dataset[0])
     return final_dataset
 
 def get_dataset_for_training_covid(dataset, include_docs, vector_store, top_k, batch_size):
