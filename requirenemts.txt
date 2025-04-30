@@ -1,0 +1,34 @@
+# PyTorch con CUDA 11.8
+torch==2.3.0+cu118
+torchaudio==2.3.0+cu118
+torchvision==0.18.0+cu118
+--extra-index-url https://download.pytorch.org/whl/cu118
+
+# NLP y Transformers
+accelerate==1.6.0
+transformers==4.51.2
+sentence-transformers==4.0.2
+spacy==3.8.5
+huggingface-hub==0.30.2
+peft==0.15.2
+trl==0.17.0
+bitsandbytes==0.45.5
+
+# Langchain ecosystem
+langgraph==0.3.29
+langchain-community==0.3.21
+langchain-huggingface==0.1.2
+
+# Data handling and visualization
+pandas==2.2.3
+matplotlib==3.10.1
+
+# Utilities
+faiss-cpu==1.10.0
+pyzipper==0.3.6
+wandb==0.19.10
+unstructured[docx]==0.17.2
+
+# Jupyter environment (optional, for notebooks)
+jupyter
+ipywidgets
