@@ -18,7 +18,7 @@ def get_dataset_for_train_phi(dataset_name, include_docs=False, vector_store=Non
     elif(dataset_name=="covid"):
         return get_dataset_for_training_covid(train_dataset, include_docs, vector_store, top_k, batch_size)
     else:
-        raise ValueError(f"Incorrect dataset name: {name_dataset}")
+        raise ValueError(f"Incorrect dataset name: {dataset_name}")
 
 def add_relevant_docs(dataset, vector_store, top_k, batch_size):
     retrieval_docs= vector_store.buscar_por_batches(dataset['question'], top_k=top_k, batch_size=batch_size)

@@ -1,18 +1,11 @@
 import sys
 import os
 sys.path.append('../src')
-from utils.save_and_load import save_docs_to_jsonl, load_docs_from_jsonl
-from utils.pre_processing_docs import split_documents, remove_duplicates, create_text_splitter
 from utils.get_documents import get_passages_by_dataset
 from vector_stores.faiss import VectorStoreFaiss
-
 from transformers import AutoTokenizer
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from tqdm import tqdm
-
 from sentence_transformers import SentenceTransformer
-from datasets import Dataset, load_from_disk
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from transformers import AutoTokenizer
 import torch
 import argparse
 
@@ -26,7 +19,7 @@ def parse_arguments():
     parser.add_argument('--output_dir', type=str, required=True, help="Directory to save vector store")
     return parser.parse_args()
 
-def create_vector_store(passages, chunk_size, chunk_overlap, embedding_model, tokenizer, folder_name, path_to_save, batch_size=2048):
+def create_vector_store(passages, embedding_model, tokenizer, folder_name, path_to_save, batch_size=2048):
     vector_store = VectorStoreFaiss.from_documents(embedding_model, passages, batch_size)
     vector_store.save_local(f'{path_to_save}{folder_name}')
     return vector_store
@@ -46,7 +39,7 @@ def main():
         passages = get_passages_by_dataset(args.dataset, args.cs, args.co, emb_tok)
         emb_model = SentenceTransformer(args.emb_model, device=device)
         print("Creating vector store")
-        vector_store = create_vector_store(passages, args.cs, args.co, emb_model, emb_tok, folder_name, args.output_dir, args.bs_emb)
+        vector_store = create_vector_store(passages, emb_model, emb_tok, folder_name, args.output_dir, args.bs_emb)
     
 if __name__ == "__main__":
     main()

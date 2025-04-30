@@ -1,5 +1,3 @@
-import os
-import sys
 from sentence_transformers.evaluation import InformationRetrievalEvaluator
 from utils.get_data_evaluator import get_data_ir_evaluator
 
