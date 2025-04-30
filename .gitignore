@@ -2,8 +2,10 @@
 datasets/
 models/
 results/
-vector_stores/
+/vector_stores/
+!src/vector_stores/
 notebooks/wandb/
+
 # Entornos virtuales
 venv/
 env/

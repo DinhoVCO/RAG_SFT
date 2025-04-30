@@ -63,4 +63,6 @@ def get_full_promt_covid(row, include_docs=True):
     question = format_input_context_covid(row, context)
     answer = row['answers']
     answer_text=answer['text'][0]
+    print("jajaja")
+    print("test:", answer_text)
     return f"{question}\n{answer_text}"
