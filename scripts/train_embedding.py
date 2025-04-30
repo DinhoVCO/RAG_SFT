@@ -88,6 +88,7 @@ def main():
     wandb.login() 
     print("Starting main process...")
     train_dataset, val_dataset, test_dataset = load_and_prepare_datasets(args.name_dataset)
+    print
     evaluator = create_evaluator_information_retrieval(args.name_dataset, val_dataset)
     my_model_name = f"{str(args.new_model_name)}_{str(args.epochs)}e_{str(args.batch_size)}bs"
     wandb.init(

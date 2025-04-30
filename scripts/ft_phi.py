@@ -30,7 +30,6 @@ def parse_args():
     parser.add_argument("--vector_store_path", type=str, default=None, help="Path to the FAISS vector store")
     parser.add_argument('--save_path', type=str, required=True, help='Path to save the fine-tuned model')
     parser.add_argument('--num_epochs', type=int, required=True, help='Number of training epochs')
-    parser.add_argument("--emb_model", type=str, default="", help="Name or Path of the embedding model")
     args = parser.parse_args()
     return args
 
@@ -81,15 +80,14 @@ def configure_training_arguments(output_dir, batch_size, num_epochs):
         report_to="wandb",
     )
 
-def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,train_dataset_name,include_docs,top_k, vector_store_path, embedding_model):
+def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,train_dataset_name,include_docs,top_k, vector_store_path):
     if(include_docs):
-        vector_store = VectorStoreFaiss.load_local(embedding_model, vector_store_path)
+        vector_store = VectorStoreFaiss.load_local(vector_store_path)
     else:
         vector_store=None
-    print("Generating dataset")
     print(f"Using k = {top_k} passages")
     dataset = get_dataset_for_train_phi(train_dataset_name, include_docs, vector_store,top_k, 8)
-    print("Example")
+    print("Input Example:")
     print(dataset[0]['text'])
     print("Loading model")
     model, tokenizer = load_model_and_tokenizer(model_name)
@@ -129,7 +127,6 @@ def main():
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Usando dispositivo: {device}")
-    embedding_model = SentenceTransformer(args.emb_model, device=device)
     train_model(
         batch_size=args.batch_size,
         model_name='microsoft/phi-2',
@@ -139,8 +136,7 @@ def main():
         train_dataset_name=args.dataset_name,
         include_docs = args.include_docs,
         top_k =args.top_k,
-        vector_store_path = args.vector_store_path,
-        embedding_model = embedding_model
+        vector_store_path = args.vector_store_path
     )
 
 if __name__ == "__main__":

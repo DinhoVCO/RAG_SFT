@@ -1,8 +1,8 @@
 import sys
 import os
 sys.path.append('../src')
-from src.utils.get_documents import get_passages_by_dataset
-from src.vector_stores.faiss import VectorStoreFaiss
+from utils.get_documents import get_passages_by_dataset
+from vector_stores.faiss import VectorStoreFaiss
 from transformers import AutoTokenizer
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer
@@ -27,8 +27,8 @@ def create_vector_store(passages, embedding_model, folder_name, path_to_save, ba
 
 def main():
     args = parse_arguments()
-    folder_name = f"vector_store_{args.dataset}"
-    dir_path = args.output_dir+folder_name
+    folder_name = f"vs_{args.dataset}_{args.cs}_{args.co}"
+    dir_path = os.path.join(args.output_dir, folder_name)
     if os.path.isdir(dir_path):
         print("The vector store already exists")
     else:
@@ -37,9 +37,8 @@ def main():
         print(f"Using device: {device}")
         emb_tok = AutoTokenizer.from_pretrained(args.emb_model)
         passages = get_passages_by_dataset(args.dataset, args.cs, args.co, emb_tok)
-        emb_model = SentenceTransformer(args.emb_model, device=device)
         print("Creating vector store")
-        create_vector_store(passages, emb_model, folder_name, args.output_dir, args.bs_emb)
+        create_vector_store(passages, args.emb_model, folder_name, args.output_dir, args.bs_emb)
     
 if __name__ == "__main__":
     main()

@@ -8,9 +8,12 @@ import os
 from sentence_transformers import SentenceTransformer
 
 class VectorStoreFaiss:
-    def __init__(self, embedding_model, index_type = faiss.IndexFlatIP):
-        self.embedding_model = embedding_model
-        self.embedding_model_name_or_path = embedding_model.model_name_or_path
+    def __init__(self, embedding_model_name, index_type = faiss.IndexFlatIP):
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print(f"Load model embedding : {embedding_model_name}")
+        print(f"Using device: {device}")
+        self.embedding_model_name_or_path = embedding_model_name
+        self.embedding_model = SentenceTransformer(embedding_model_name, device=device)
         self.index = None
         self.embeddings = None
         self.documents = None
@@ -102,7 +105,7 @@ class VectorStoreFaiss:
 
         config = {
             "embedding_model_name_or_path": self.embedding_model_name_or_path,
-            "index_type": self.index_type,
+            "index_type": self.index_type.__name__,
         }
 
         faiss.write_index(self.index, os.path.join(folder_path, "faiss_index"))
@@ -115,16 +118,18 @@ class VectorStoreFaiss:
         """
         Carga un índice FAISS desde un archivo.
         """
+        faiss_index_types = {
+            "IndexFlatIP": faiss.IndexFlatIP,
+            "IndexFlatL2": faiss.IndexFlatL2,
+        }
         config = load_config(os.path.join(folder_path, "config.json"))
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        print(f"Load model embedding from: {config['embedding_model_name_or_path']}")
-        print(f"Using device: {device}")
-        emb_model = SentenceTransformer(config['embedding_model_name_or_path'], device=device)
-        index = faiss.read_index(folder_path+"/faiss_index")
-        documents = load_docs_from_jsonl(folder_path+'/documents.jsonl')
-        instance = cls(emb_model)
+        emb_model_name = config['embedding_model_name_or_path']
+        index = faiss.read_index(os.path.join(folder_path, "faiss_index"))
+        documents = load_docs_from_jsonl(os.path.join(folder_path, "documents.jsonl"))
+        index_type_str = config['index_type']
+        index_type = faiss_index_types.get(index_type_str)
+        instance = cls(emb_model_name, index_type)
         instance.index = index
-        instance.index_type = config['index_type']
         instance.documents = documents
         print(f"💾 Vector store loaded from{folder_path}")
         return instance
