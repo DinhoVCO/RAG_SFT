@@ -1,5 +1,5 @@
-from utils.save_and_load import save_docs_to_jsonl, load_docs_from_jsonl
-from datasets import concatenate_datasets, load_from_disk, load_dataset
+from utils.save_and_load import load_docs_from_jsonl
+from datasets import concatenate_datasets, load_dataset
 from langchain_core.documents import Document
 from utils.pre_processing_docs import remove_duplicates, create_text_splitter, split_documents
 from tqdm import tqdm
@@ -17,9 +17,6 @@ def get_passages_by_dataset(name_dataset, chunk_size=150, chunk_overlap=20, toke
         return get_passages_for_covid(chunk_size, chunk_overlap, tokenizer)
     else:
         raise ValueError(f"Incorrect dataset name: {name_dataset}")
-
-
-
 
 
 def get_passages_for_teleqna(chunk_size, chunk_overlap, tokenizer):

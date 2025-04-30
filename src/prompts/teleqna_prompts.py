@@ -1,5 +1,3 @@
-import os
-import sys
 from string import Template
 import pandas as pd
 import random

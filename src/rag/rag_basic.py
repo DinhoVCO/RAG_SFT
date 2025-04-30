@@ -1,9 +1,6 @@
 import sys
 sys.path.append('../../../src')
 from vector_stores.faiss import VectorStoreFaiss
-
-import pandas as pd
-from typing import Optional, List, Tuple
 from transformers import pipeline
 from tqdm import tqdm
 from prompts.prompt_for_inference import prompt_for_inference

@@ -9,7 +9,7 @@ import pandas as pd
 import argparse
 from utils.datasets_splits import load_dataset_splits
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel, PeftConfig
+from peft import PeftModel
 
 def load_model(model_name, device):
     print("loading model base")

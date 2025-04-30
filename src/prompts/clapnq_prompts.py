@@ -1,13 +1,7 @@
-import os
-import sys
 from string import Template
-import pandas as pd
-import random
-from utils.pre_processing_docs import remove_duplicates, create_text_splitter, split_documents
+from utils.pre_processing_docs import create_text_splitter
 from transformers import (
-    AutoModelForCausalLM,
     AutoTokenizer,
-    TrainingArguments,
 )
 
 template_RAG = Template(
