@@ -15,3 +15,12 @@ def load_docs_from_jsonl(file_path)->Iterable[Document]:
             obj = Document(**data)
             array.append(obj)
     return array
+
+def save_config(path, config):
+    with open(path, "w") as f:
+        json.dump(config, f, indent=4)
+
+def load_config(path)
+    with open(path, "r") as f:
+        loaded_config = json.load(f)
+    return loaded_config

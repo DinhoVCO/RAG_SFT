@@ -53,8 +53,6 @@ def get_dataset_for_training_boolq(dataset, include_docs, vector_store, top_k, b
     if(include_docs):
         dataset= add_relevant_docs(dataset, vector_store, top_k, batch_size) 
     final_dataset = final_dataset_for_training(dataset, get_full_promt_boolq, include_docs)
-    print("Example initial")
-    print(final_dataset[0])
     return final_dataset
 
 def get_dataset_for_training_covid(dataset, include_docs, vector_store, top_k, batch_size):
