@@ -1,14 +1,16 @@
 import faiss
 import numpy as np
-from utils.save_and_load import save_docs_to_jsonl, load_docs_from_jsonl
+from utils.save_and_load import save_docs_to_jsonl, load_docs_from_jsonl, save_config, load_config
 from tqdm import tqdm
 import torch
 import gc
 import os
+from sentence_transformers import SentenceTransformer
 
 class VectorStoreFaiss:
     def __init__(self, embedding_model, index_type = faiss.IndexFlatIP):
         self.embedding_model = embedding_model
+        self.embedding_model_name_or_path = embedding_model.model_name_or_path
         self.index = None
         self.embeddings = None
         self.documents = None
@@ -97,21 +99,34 @@ class VectorStoreFaiss:
         if folder_path != "":  # Por si el path es solo un nombre de archivo
             os.makedirs(folder_path, exist_ok=True)
 
-        faiss.write_index(self.index, folder_path+"/faiss_index")
-        save_docs_to_jsonl(self.documents, folder_path+"/documents.jsonl")
-        print(f"💾 Vector store guardado en {folder_path}")
+
+        config = {
+            "embedding_model_name_or_path": self.embedding_model_name_or_path,
+            "index_type": self.index_type,
+        }
+
+        faiss.write_index(self.index, os.path.join(folder_path, "faiss_index"))
+        save_docs_to_jsonl(self.documents, os.path.join(folder_path, "documents.jsonl"))
+        save_config(config, os.path.join(folder_path, "config.json"))
+        print(f"💾 Vector store saved in {folder_path}")
 
     @classmethod
-    def load_local(cls, embedding_model, folder_path):
+    def load_local(cls, folder_path):
         """
         Carga un índice FAISS desde un archivo.
         """
+        config = load_config(os.path.join(folder_path, "config.json"))
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print(f"Load model embedding from: {config['embedding_model_name_or_path']}")
+        print(f"Using device: {device}")
+        emb_model = SentenceTransformer(config['embedding_model_name_or_path'], device=device)
         index = faiss.read_index(folder_path+"/faiss_index")
         documents = load_docs_from_jsonl(folder_path+'/documents.jsonl')
-        instance = cls(embedding_model)
+        instance = cls(emb_model)
         instance.index = index
+        instance.index_type = config['index_type']
         instance.documents = documents
-        print(f"💾  Vector store cargado desde {folder_path}")
+        print(f"💾 Vector store loaded from{folder_path}")
         return instance
         
     @classmethod
