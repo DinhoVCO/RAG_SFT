@@ -64,6 +64,11 @@ def configure_training_arguments(output_dir, batch_size, num_epochs):
         bf16=False,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
+        evaluation_strategy="epoch",                       # ← eval cada época
+        save_strategy="epoch",                             # ← guardar checkpoint cada época
+        load_best_model_at_end=True,                       # ← guarda el mejor
+        metric_for_best_model="eval_loss",                 # ← evalúa usando pérdida
+        greater_is_better=False,                           # ← pérdida más baja es mejor
         gradient_accumulation_steps=4,
         gradient_checkpointing=True,
         max_grad_norm=0.3,
@@ -86,7 +91,7 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
     else:
         vector_store=None
     print(f"Using k = {top_k} passages")
-    dataset = get_dataset_for_train_phi(train_dataset_name, include_docs, vector_store,top_k, 8)
+    train_ds, val_ds = get_dataset_for_train_phi(train_dataset_name, include_docs, vector_store,top_k, 8)
     print("Input Example:")
     print(dataset[0]['text'])
     print("Loading model")
@@ -100,7 +105,8 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
     print("Training")
     trainer = SFTTrainer(
         model=model,
-        train_dataset=dataset,
+        train_dataset=train_ds,
+        eval_dataset=val_ds, 
         args=training_arguments,
         peft_config=peft_config,
         data_collator=collator,
@@ -113,9 +119,9 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
     else:
         print("🟢 No checkpoints found. Starting training from scratch.")
         trainer.train()
-    trainer.model.save_pretrained(os.path.join(save_path, "final"+new_model_name))
+    trainer.model.save_pretrained(os.path.join(save_path, "best_"+new_model_name))
     trainable_params = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
-    print(f"Parámetros entrenables finales: {trainable_params}")
+    print(f"trainable parameters: {trainable_params}")
 
 def main():
     args = parse_args()

@@ -61,14 +61,13 @@ def column_question(dataset_name):
     else:
         return 'question'
 
-def main(emb_model, gen_model, lora_adapter_path, max_new_tokens, use_rag, vector_store_path, dataset_name, output_csv_path, bs_emb, bs_gen, top_k):
+def main(gen_model, lora_adapter_path, max_new_tokens, use_rag, vector_store_path, dataset_name, output_csv_path, bs_emb, bs_gen, top_k):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     reader_model, tokenizer = load_reader_ft_model(gen_model, device, lora_adapter_path)
     vector_store = None
     if(use_rag):
-        embedding_model = SentenceTransformer(emb_model, device=device)
-        vector_store = VectorStoreFaiss.load_local(embedding_model, vector_store_path)
+        vector_store = VectorStoreFaiss.load_local(vector_store_path)
     rag_pipeline = create_rag_pipeline(dataset_name,reader_model, tokenizer, vector_store, max_new_tokens)
     dataset = load_dataset_for_inference(dataset_name)
     answers = rag_pipeline.answer_batch(dataset,column_question(dataset_name), bs_emb, bs_gen, top_k)
@@ -76,7 +75,6 @@ def main(emb_model, gen_model, lora_adapter_path, max_new_tokens, use_rag, vecto
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RAG Pipeline Execution")
-    parser.add_argument("--emb_model", type=str, default='BAAI/bge-small-en-v1.5', help="Name of the embedding model")
     parser.add_argument("--gen_model", type=str, default='microsoft/phi-2', help="Name of the generative model")
     parser.add_argument("--lora_adapter_path", type=str, default=None, help="Name or path of the peft model")
     parser.add_argument("--max_new_tokens", type=int, default=None, help="Max new tokens")
@@ -91,7 +89,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(
-        args.emb_model,
         args.gen_model,
         args.lora_adapter_path,
         args.max_new_tokens,

@@ -5,19 +5,26 @@ from prompts.covid_prompts import get_full_promt_covid
 from utils.datasets_splits import load_dataset_splits
 
 def get_dataset_for_train_phi(dataset_name, include_docs=False, vector_store=None, top_k=4, batch_size=8):
+    print(f"Creating dataset for {dataset_name}")
     train_dataset, val_dataset, test_dataset = load_dataset_splits(dataset_name)
     if(dataset_name=="teleqna"):
-        print(f"Creating dataset for {dataset_name}")
-        return get_dataset_for_training_teleqna(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_train_phi = get_dataset_for_training_teleqna(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_val_phi = get_dataset_for_training_teleqna(val_dataset, include_docs, vector_store, top_k, batch_size)
+        return ds_train_phi, ds_val_phi
     elif(dataset_name=="squad"):
         return 0
     elif(dataset_name=="clapnq"):
-        return get_dataset_for_training_clapnq(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_train_phi = get_dataset_for_training_clapnq(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_val_phi = get_dataset_for_training_clapnq(val_dataset, include_docs, vector_store, top_k, batch_size)
+        return ds_train_phi, ds_val_phi
     elif(dataset_name=="boolq"):
-        return get_dataset_for_training_boolq(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_train_phi = get_dataset_for_training_boolq(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_val_phi = get_dataset_for_training_boolq(val_dataset, include_docs, vector_store, top_k, batch_size)
+        return ds_train_phi, ds_val_phi
     elif(dataset_name=="covid"):
-        print(f"Creating dataset for {dataset_name}")
-        return get_dataset_for_training_covid(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_train_phi= get_dataset_for_training_covid(train_dataset, include_docs, vector_store, top_k, batch_size)
+        ds_val_phi = get_dataset_for_training_covid(val_dataset, include_docs, vector_store, top_k, batch_size)
+        return ds_train_phi, ds_val_phi
     else:
         raise ValueError(f"Incorrect dataset name: {dataset_name}")
 
