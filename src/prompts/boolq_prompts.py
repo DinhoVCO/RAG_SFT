@@ -33,6 +33,12 @@ def format_input_context_boolq(row, context=None):
     return input_text
 
 def get_full_promt_boolq(row, include_docs=True):
+    def get_answer(row):
+        bool_answer = row['answer']
+        if(bool_answer):
+            return 'Yes'
+        else:
+            return 'No'
     def get_context(row):
         relevant_docs = row['relevant_documents']
         passage_gold = row['passage']
@@ -51,5 +57,5 @@ def get_full_promt_boolq(row, include_docs=True):
     if(include_docs):
         context = get_context(row)
     question = format_input_context_boolq(row, context)
-    answer = row['answer']
+    answer =  get_answer(row)
     return f"{question}\n{answer}"

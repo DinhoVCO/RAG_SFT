@@ -17,6 +17,7 @@ from vector_stores.faiss import VectorStoreFaiss
 from sentence_transformers import SentenceTransformer
 import torch
 from peft import get_peft_model
+from transformers import set_seed
 
 #5e 10bs
 
@@ -64,11 +65,12 @@ def configure_training_arguments(output_dir, batch_size, num_epochs):
         bf16=False,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
-        evaluation_strategy="epoch",                       # ← eval cada época
-        save_strategy="epoch",                             # ← guardar checkpoint cada época
+        eval_strategy="steps",                             # ← eval cada época
+        save_strategy="steps",                             # ← guardar checkpoint cada época
         load_best_model_at_end=True,                       # ← guarda el mejor
         metric_for_best_model="eval_loss",                 # ← evalúa usando pérdida
         greater_is_better=False,                           # ← pérdida más baja es mejor
+        disable_tqdm=True,
         gradient_accumulation_steps=4,
         gradient_checkpointing=True,
         max_grad_norm=0.3,
@@ -93,7 +95,7 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
     print(f"Using k = {top_k} passages")
     train_ds, val_ds = get_dataset_for_train_phi(train_dataset_name, include_docs, vector_store,top_k, 8)
     print("Input Example:")
-    print(dataset[0]['text'])
+    print(train_ds[0]['text'])
     print("Loading model")
     model, tokenizer = load_model_and_tokenizer(model_name)
     peft_config = configure_lora()
@@ -125,6 +127,7 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
 
 def main():
     args = parse_args()
+    set_seed(42)
     load_dotenv()
     wandb.login() 
     wandb.init(

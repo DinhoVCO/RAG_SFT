@@ -39,6 +39,7 @@ def configure_training(my_model_name, epochs, batch_size, output_dir):
         num_train_epochs=epochs,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
+        disable_tqdm=True,
         warmup_ratio=0.1,
         learning_rate= 5e-5,#2e-05, #3e-5,
         weight_decay=0.01,
@@ -51,7 +52,7 @@ def configure_training(my_model_name, epochs, batch_size, output_dir):
         eval_steps=15,
         save_strategy="steps",
         save_steps=15,
-        save_total_limit=1,
+        save_total_limit=2,
         logging_steps=15,
         run_name=my_model_name,  # Will be used in W&B if wandb is installed
         load_best_model_at_end=True,
