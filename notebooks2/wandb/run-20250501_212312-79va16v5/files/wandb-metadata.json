@@ -1,0 +1,54 @@
+{
+  "os": "Linux-5.11.0-40-generic-x86_64-with-glibc2.31",
+  "python": "CPython 3.10.14",
+  "startedAt": "2025-05-02T00:23:12.149317Z",
+  "args": [
+    "--name_dataset",
+    "covid",
+    "--model_name",
+    "BAAI/bge-small-en-v1.5",
+    "--new_model_name",
+    "bge-small-covid",
+    "--epochs",
+    "10",
+    "--batch_size",
+    "128",
+    "--output_dir",
+    "../models/covid/embedding/"
+  ],
+  "program": "/local1/ronaldinho/projects/test_sbbd/notebooks2/../scripts/train_embedding.py",
+  "codePath": "scripts/train_embedding.py",
+  "git": {
+    "remote": "https://github.com/DinhoVCO/test_sbbd.git",
+    "commit": "eb892aa6a20b5ae653488cbfa845f2a05cde9ca3"
+  },
+  "email": "dinho15971@gmail.com",
+  "root": "/local1/ronaldinho/projects/test_sbbd/notebooks2",
+  "host": "thedeep2",
+  "executable": "/local1/ronaldinho/enviroments/env_sbbd/bin/python",
+  "cpu_count": 8,
+  "cpu_count_logical": 8,
+  "gpu": "Quadro RTX 6000",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "78209904640",
+      "used": "68152729600"
+    }
+  },
+  "memory": {
+    "total": "16694566912"
+  },
+  "cpu": {
+    "count": 8,
+    "countLogical": 8
+  },
+  "gpu_nvidia": [
+    {
+      "name": "Quadro RTX 6000",
+      "memoryTotal": "25388056576",
+      "architecture": "Turing"
+    }
+  ],
+  "cudaVersion": "11.5"
+}

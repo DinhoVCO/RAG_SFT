@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('../src')
+#sys.path.append('../src')
 import argparse
 from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, SentenceTransformerTrainingArguments
 from sentence_transformers.losses import MultipleNegativesRankingLoss

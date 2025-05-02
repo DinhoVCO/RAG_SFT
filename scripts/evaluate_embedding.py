@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('../src')
+#sys.path.append('../src')
 import json
 import argparse
 from sentence_transformers import SentenceTransformer

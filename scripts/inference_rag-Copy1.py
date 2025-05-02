@@ -17,30 +17,20 @@ def load_model_auto(device="cuda", model_name=None, lora_adapter_path=None):
         config = PeftConfig.from_pretrained(lora_adapter_path)
         model = AutoModelForCausalLM.from_pretrained(
             config.base_model_name_or_path,
-            torch_dtype=torch.float32, # fixes issue in inference related to float16 values producing "!!!!" rather than output.
-            device_map="auto",   
+            torch_dtype="auto",
             trust_remote_code=True,
-        )
+        ).to(device)
         model = PeftModel.from_pretrained(model, lora_adapter_path).to(device)
         model = model.merge_and_unload()
-        #tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path, trust_remote_code=True, padding_side="left")
-        tokenizer:object=AutoTokenizer.from_pretrained(config.base_model_name_or_path,
-                                               add_bos_token=True,
-                                               trust_remote_code=True,
-                                               use_fast=False)
+        tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path, trust_remote_code=True, padding_side="left")
     elif model_name:
         print(f"Loading base model: {model_name}")
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float32, # fixes issue in inference related to float16 values producing "!!!!" rather than output.
-            device_map="auto",
+            torch_dtype="auto",
             trust_remote_code=True,
-        )
-        #tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, padding_side="left")
-        tokenizer:object=AutoTokenizer.from_pretrained(model_name,
-                                               add_bos_token=True,
-                                               trust_remote_code=True,
-                                               use_fast=False)
+        ).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, padding_side="left")
     else:
         raise ValueError("You must provide either a model_name or a lora_adapter_path.")
 

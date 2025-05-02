@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append('../src')
+#sys.path.append('../src')
 from utils.get_documents import get_passages_by_dataset
 from vector_stores.faiss import VectorStoreFaiss
 from transformers import AutoTokenizer

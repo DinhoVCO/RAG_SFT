@@ -7,7 +7,6 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     TrainingArguments,
-    DataCollatorForLanguageModeling
 )
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 from utils.data_for_train_phi import get_dataset_for_train_phi
@@ -18,6 +17,8 @@ from sentence_transformers import SentenceTransformer
 import torch
 from peft import get_peft_model
 from transformers import set_seed
+
+#5e 10bs
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Fine-tune Phi-2 model with LoRA.")
@@ -36,24 +37,15 @@ def load_model_and_tokenizer(model_name):
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         device_map="auto",
-        torch_dtype=torch.float32, # fixes issue in inference related to float16 values producing "!!!!" rather than output.
-        trust_remote_code=True,
     )
     model.config.use_cache = False
     #tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
     #tokenizer.pad_token = tokenizer.eos_token
-    # tokenizer = AutoTokenizer.from_pretrained(model_name)
-    # tokenizer.pad_token = tokenizer.unk_token  # use unk rather than eos token to prevent endless generation
-    # tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
-    # tokenizer.padding_side = 'right'
-    tokenizer:object=AutoTokenizer.from_pretrained(
-        model_name,
-        padding_side="left", # 
-        add_eos_token=True, # end of sequence token
-        add_bos_token=True, # beginning of sequence token
-        use_fast=False,
-    )
-    tokenizer.pad_token = tokenizer.eos_token 
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer.pad_token = tokenizer.unk_token  # use unk rather than eos token to prevent endless generation
+    tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+    tokenizer.padding_side = 'right'
+
     return model, tokenizer
 
 def configure_lora():
@@ -127,7 +119,6 @@ def train_model(batch_size, model_name, new_model_name, save_path, num_epochs,tr
         eval_dataset=val_ds, 
         args=training_arguments,
         peft_config=peft_config,
-        data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False)
         #data_collator=collator,
     )
     checkpoints = [d for d in os.listdir(output_dir) if d.startswith("checkpoint-")] if os.path.exists(output_dir) else []
