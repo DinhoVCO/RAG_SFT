@@ -5,7 +5,7 @@ results/
 /vector_stores/
 !src/vector_stores/
 notebooks/wandb/
-
+notebooks2/wandb/
 # Entornos virtuales
 venv/
 env/

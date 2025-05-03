@@ -58,4 +58,4 @@ def get_full_promt_boolq(row, include_docs=True):
         context = get_context(row)
     question = format_input_context_boolq(row, context)
     answer =  get_answer(row)
-    return f"{question}\n{answer}"
+    return f"{question}\n{answer}\n<|endoftext|>"

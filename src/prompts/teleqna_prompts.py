@@ -66,4 +66,4 @@ def get_full_promt_teleqna(row, include_docs=True):
         context = get_context(row)
     question = format_input_context_teleqna(row, context)
     answer = get_answer(row)
-    return f"{question}\n{answer}"
+    return f"{question}\n{answer}\n<|endoftext|>"
