@@ -39,7 +39,8 @@ def add_relevant_docs(dataset, vector_store, top_k, batch_size):
 def final_dataset_for_training(dataset, get_full_promt, include_docs):
     new_dataset = dataset.map(
         lambda row: {'text': get_full_promt(row, include_docs)},
-        remove_columns=dataset.column_names
+        remove_columns=dataset.column_names,
+        load_from_cache_file=False
     )
     return new_dataset
 

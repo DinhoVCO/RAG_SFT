@@ -36,9 +36,9 @@ def get_full_promt_boolq(row, include_docs=True):
     def get_answer(row):
         bool_answer = row['answer']
         if(bool_answer):
-            return 'Yes'
+            return 'yes'
         else:
-            return 'No'
+            return 'no'
     def get_context(row):
         relevant_docs = row['relevant_documents']
         passage_gold = row['passage']

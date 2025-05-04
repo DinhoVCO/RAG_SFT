@@ -61,6 +61,7 @@ def get_passages_for_squad():
     print("Datasets loaded and prepared.")
     return train_dataset, val_dataset, test_dataset
 
+
 def get_passages_for_clapnq():
     def extract_title_and_text(example):
         if isinstance(example['passages'], list) and len(example['passages']) > 0:
@@ -71,21 +72,27 @@ def get_passages_for_clapnq():
         return {'context': ''}
     
     train_dataset, val_dataset, test_dataset = load_dataset_splits('clapnq')
-    train_dataset = train_dataset.map(extract_title_and_text)
+    #only answerable rows
+    #train_dataset = train_dataset.filter(lambda row: row['output'][0]['answer'] != '', load_from_cache_file=False)
+    #val_dataset = val_dataset.filter(lambda row: row['output'][0]['answer'] != '', load_from_cache_file=False)
+    #test_dataset = test_dataset.filter(lambda row: row['output'][0]['answer'] != '', load_from_cache_file=False)
+
+
+    train_dataset = train_dataset.map(extract_title_and_text, load_from_cache_file=False)    
     train_dataset = train_dataset.select_columns(['id', 'input', 'context'])
     train_dataset = train_dataset.rename_columns({
         "id": "q_id",
         "input": "question",
         "context": "relevant_docs"
     })
-    val_dataset = val_dataset.map(extract_title_and_text)
+    val_dataset = val_dataset.map(extract_title_and_text, load_from_cache_file=False)
     val_dataset = val_dataset.select_columns(['id', 'input', 'context'])
     val_dataset = val_dataset.rename_columns({
         "id": "q_id",
         "input": "question",
         "context": "relevant_docs"
     })
-    test_dataset = test_dataset.map(extract_title_and_text)
+    test_dataset = test_dataset.map(extract_title_and_text, load_from_cache_file=False)
     test_dataset = test_dataset.select_columns(['id', 'input', 'context'])
     test_dataset = test_dataset.rename_columns({
         "id": "q_id", 
@@ -100,21 +107,21 @@ def get_passages_for_boolq():
         return {"id": idx}
 
     train_dataset, val_dataset, test_dataset = load_dataset_splits('boolq')
-    train_dataset = train_dataset.map(add_id, with_indices=True)
+    train_dataset = train_dataset.map(add_id, with_indices=True, load_from_cache_file=False)
     train_dataset = train_dataset.select_columns(['id', 'question', 'passage'])
     train_dataset = train_dataset.rename_columns({
         "id": "q_id",
         "question": "question",
         "passage": "relevant_docs"
     })
-    val_dataset = val_dataset.map(add_id, with_indices=True)
+    val_dataset = val_dataset.map(add_id, with_indices=True, load_from_cache_file=False)
     val_dataset = val_dataset.select_columns(['id', 'question', 'passage'])
     val_dataset = val_dataset.rename_columns({
         "id": "q_id",
         "question": "question",
         "passage": "relevant_docs"
     })
-    test_dataset = test_dataset.map(add_id, with_indices=True)
+    test_dataset = test_dataset.map(add_id, with_indices=True, load_from_cache_file=False)
     test_dataset = test_dataset.select_columns(['id', 'question', 'passage'])
     test_dataset = test_dataset.rename_columns({
         "id": "q_id", 
@@ -140,9 +147,9 @@ def get_passages_for_covid():
     
     train_dataset, val_dataset, test_dataset = load_dataset_splits('covid')
     
-    train_dataset = train_dataset.map(add_context_window)
-    val_dataset = val_dataset.map(add_context_window)
-    test_dataset = test_dataset.map(add_context_window)
+    train_dataset = train_dataset.map(add_context_window, load_from_cache_file=False)
+    val_dataset = val_dataset.map(add_context_window, load_from_cache_file=False)
+    test_dataset = test_dataset.map(add_context_window, load_from_cache_file=False)
     
     train_dataset = train_dataset.select_columns(['id', 'question', 'context_window'])
     train_dataset = train_dataset.rename_columns({
