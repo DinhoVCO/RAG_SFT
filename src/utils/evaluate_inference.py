@@ -6,6 +6,7 @@ from rouge_score import rouge_scorer
 from sacrebleu.metrics import BLEU
 from ragas.metrics import ExactMatch
 from datasets import Dataset
+import re
 
 def evaluate_answer(dataset_name, path_inference):
     train_ds, val_ds, test_ds = load_dataset_splits(dataset_name)
@@ -117,10 +118,17 @@ def evaluate_answer_teleqna(test_ds, path_inference):
         option = row['answer']
         full_ans = row[option]
         return {'true_answer': f"{option}) {full_ans}"}
+    def answer_option(texto):
+        match = re.search(r'([A-Za-z])\)', texto)
+        if match:
+            letra = match.group(1)
+            return letra
+        else:
+            return 'None'
 
     df = pd.read_csv(path_inference)
     inference_answers = df["inference"].tolist()
-    answer_options = [opcion.replace("\n", "").strip()[0] for opcion in inference_answers]
+    answer_options = [answer_option(opcion) for opcion in inference_answers]
     test_ds = test_ds.map(get_true_answers)
     true_answers = test_ds['true_answer']
     
@@ -137,12 +145,22 @@ def evaluate_answer_teleqna(test_ds, path_inference):
 
 def evaluate_answer_boolq(test_ds, path_inference):
     def get_accuracy_boolq(inference_answers, true_answers):
+        yes_answers= ['yes', 'true']
+        no_answers = ['no','false']
         if len(inference_answers) != len(true_answers):
             raise ValueError("Las listas de respuestas deben tener la misma longitud.")
-        
-        correct_count = sum(1 for i, answer in enumerate(inference_answers) if answer.strip() == true_answers[i])
+
+        correct_count = 0
+        for i, answer in enumerate(inference_answers):
+            if (answer.strip().lower() in yes_answers):
+                if true_answers[i]  == 'True':
+                    correct_count+=1
+            if (answer.strip().lower() in no_answers):
+                if true_answers[i]  == 'False':
+                    correct_count+=1
         accuracy = correct_count / len(true_answers) * 100 
         return accuracy
+        
     df = pd.read_csv(path_inference)
     inference_answers = df["inference"].tolist()
     test_ds = test_ds.select_columns(['question','answer'])  
