@@ -40,7 +40,7 @@ def format_input_context_covid(row, context=None):
 
 def get_full_promt_covid(row, include_docs=True):
     
-    def get_full_window(context, answer_start, window_size=150):
+    def get_full_window(context, answer_start, window_size=220):
         start = max(0, answer_start - window_size)
         end = min(len(context), answer_start + window_size)
         return context[start:end]
@@ -63,6 +63,4 @@ def get_full_promt_covid(row, include_docs=True):
     question = format_input_context_covid(row, context)
     answer = row['answers']
     answer_text=answer['text'][0]
-    print("jajaja")
-    print("test:", answer_text)
-    return f"{question}\n{answer_text}"
+    return f"{question}\n{answer_text}\n<|endoftext|>"

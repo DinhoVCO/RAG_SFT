@@ -13,8 +13,8 @@ class RAGPipeline:
         self.knowledge_index = knowledge_index
         self.dataset_name = dataset_name
 
-    def answer_batch(self, dataset:Dataset, column_query:str, retriever_bs=100, llm_bs = 20, num_retrieved_docs: int = 30):
-        query_list = dataset[column_query]
+    def answer_batch(self, dataset:Dataset, retriever_bs=100, llm_bs = 20, num_retrieved_docs: int = 30):
+        query_list = dataset['question']
         prompts=[]
         if(self.knowledge_index):
             relevant_docs = self.knowledge_index.buscar_por_batches(query_list, top_k=num_retrieved_docs, batch_size=retriever_bs)
@@ -26,6 +26,8 @@ class RAGPipeline:
             else :
                 final_prompt = prompt_for_inference(self.dataset_name,dataset[i])
                 prompts.append(final_prompt)
+        print("Example prompt")
+        print(prompts[0])
         print("Processing inference")
         answers = self.llm(prompts, batch_size=llm_bs)
         return answers

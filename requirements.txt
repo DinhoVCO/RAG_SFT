@@ -32,3 +32,10 @@ unstructured[docx]==0.17.2
 # Jupyter environment (optional, for notebooks)
 jupyter
 ipywidgets
+
+#Evaluation
+ragas
+sacrebleu
+rouge_score
+
+#pip install -e .

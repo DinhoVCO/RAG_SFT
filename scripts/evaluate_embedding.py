@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('../src')
+#sys.path.append('../src')
 import json
 import argparse
 from sentence_transformers import SentenceTransformer
@@ -72,9 +72,8 @@ def main():
     metrics = {}
     for model_key, model_to_evaluate in models.items():
         metrics[model_key] = evaluator(model_to_evaluate)
-
-    # Guardar las métricas en formato JSON
-    with open(f"{output_dir}/metrics_checkpoint_embedding.json", "w") as f:
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, "metrics_checkpoint_embedding.json"), "w") as f:
         json.dump(metrics, f, indent=4)
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ def get_full_promt_clapnq(row, include_docs=True):
         tokenizer.pad_token = tokenizer.eos_token
         text_splitter = create_text_splitter(150, 20, tokenizer)
         doc_passages = text_splitter.split_text(passage_gold)
-        relevant_docs += doc_passages[:3]
+        relevant_docs += doc_passages[:4]
         context = ""
         context += "".join(
             [f"\nDocument {str(i)}:" + doc for i, doc in enumerate(relevant_docs)]
@@ -65,4 +65,4 @@ def get_full_promt_clapnq(row, include_docs=True):
         context = get_context(row)
     question = format_input_context_clapnq(row, context)
     answer = get_answer(row)
-    return f"{question}\n{answer}"
+    return f"{question}\n{answer}\n<|endoftext|>"
