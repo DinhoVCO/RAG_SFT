@@ -1,5 +1,4 @@
 import sys
-sys.path.append('../../../src')
 from vector_stores.faiss import VectorStoreFaiss
 from transformers import pipeline
 from tqdm import tqdm

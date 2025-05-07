@@ -1,3 +1,0 @@
-ronaldinho@thedeep2:/local1/ronaldinho/projects/FinalSBBD$ git branch -M main
-error: refname refs/heads/master not found
-fatal: Branch rename failed
