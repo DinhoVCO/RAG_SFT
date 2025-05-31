@@ -4,4 +4,7 @@ SSL_CERT_FILE2 =
 AZURE_OPENAI_ENDPOINT = 
 OPENAI_API_VERSION = 2023-08-01-preview
 MODELS = {"gpt-4o": "change_name_model", "gpt-3.5-turbo": "change_name_model"}
-TAVILY_API_KEY = 
+
+#HUGGINGFACE
+HUGGINGFACE_TOKEN=
+WANDB_API_KEY=

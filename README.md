@@ -7,31 +7,72 @@ A abordagem proposta utiliza **modelos leves** para equilibrar desempenho e efic
 Os experimentos demonstraram um **aumento de 22,38% na precisão das respostas**, tornando a solução escalável e viável para aplicações reais no setor de telecomunicações. Essa abordagem reduz os custos computacionais e possibilita a implementação em ambientes com recursos limitados. Como próximos passos, a pesquisa pretende expandir a base de conhecimento e aprimorar a estratégia de re-ranqueamento para continuar melhorando a precisão do sistema.  
 
 
-![RAG Fine tuning](./paper/RAG_3gpp_FT.drawio.png)
+![RAG Fine tuning](./images/rag_full_FT.png)
 
+### Primeira fase : FT Embedding model
+![Embedding Fine tuning](./images/first_step.png)
+
+### Segunda fase :FT Generative model
+![Generative model Fine tuning](./images/second_step.png)
 
 ## 📊 Conjuntos de Dados Utilizados  
 
-- **[TeleQnA](https://huggingface.co/datasets/dinho1597/3GPP-QA-MultipleChoice)** → Conjunto com 10.000 perguntas sobre telecomunicações, categorizadas em léxico, pesquisa e especificações 3GPP.  
-- CovidQA
-- CLAPnq
-- BoolQ
+- **[3GPP-QA-MultipleChoice](https://huggingface.co/datasets/DinoStackAI/3GPP-QA-MultipleChoice)**, subconjunto de [TeleQnA](https://huggingface.co/datasets/netop/TeleQnA) com perguntas sobre telecomunicações, categorizadas em léxico e especificações do 3GPP.  
+- **[CovidQA](https://huggingface.co/datasets/deepset/covid_qa_deepset)**
+- **[CLAPnq](https://huggingface.co/datasets/PrimeQA/clapnq)**
+- **[BoolQ](https://huggingface.co/datasets/google/boolq)**
 
-## Fast Start
+## Corpus
+Os conjuntos de dados BoolQ e COVID-QA incluem corpus.
+- **[3GPP-Release 18](https://huggingface.co/datasets/netop/3GPP-R18)** : Baixar o [arquivo .json](https://drive.google.com/file/d/1yX9GSqY-O31ruuLp1HRTvMPxzFwFbHOg/view?usp=sharing) e salvá-lo na pasta datasets/teleqna/corpus/
+- **[CLAPnq](https://huggingface.co/datasets/PrimeQA/clapnq_passages)**
 
-O primeiro passo é baixar o código do repositório contendo os scripts necessários:  
+
+## Início Rápido
+OBS: Recomendamos criar primeiro um ambiente virtual venv
 ```bash
-!git clone https://github.com/DinhoVCO/RAG_FT_SLM.git
+python3.10 -m venv rag_ft
 ```
-2️⃣ **Instalar as dependências**
+Ativar o entorno para Linux
 ```bash
-!pip install -r /RAG_FT_SLM/requirements.txt 
+source rag_ft/bin/activate
+```
+Ativar o entorno para Windows
+```bash
+rag_ft\Scripts\activate
+```
+
+
+1. O primeiro passo é baixar o código do repositório contendo os scripts necessários:  
+```bash
+git clone https://github.com/DinhoVCO/RAG_FT_SLM.git
+```
+2. **Instalar as dependências**
+```bash
+pip install -r /requirements.txt 
+```
+3.  **Instalar nossa biblioteca**
+```bash
+pip install -e .
+```
+4. Para trabalhar com Jupyter Notebooks, é necessário criar um kernel:
+```bash
+python -m ipykernel install --user --name rag_ft --display-name "Python 3.10 (rag_ft)"
+```
+5. Alterar o nome do arquivo env para .env e preenchê-lo com as respectivas variáveis de ambiente.
+```
+AZURE_OPENAI_API_KEY = 
+SSL_CERT_FILE2 = 
+AZURE_OPENAI_ENDPOINT = 
+OPENAI_API_VERSION = 2023-08-01-preview
+MODELS = {"gpt-4o": "change_name_model", "gpt-3.5-turbo": "change_name_model"}
+HUGGINGFACE_TOKEN=
+WANDB_API_KEY=
 ```
 
 ## 🎯 Ajustando o Modelo de Embeddings  
 
 Para realizar o **fine-tuning** do modelo de embeddings **bge-small-en-v1.5**, utilizamos um ambiente como **Google Colab** ou **Jupyter Notebook**. A seguir, apresentamos os passos necessários para configurar e treinar o modelo.  
-
 ###  Ajuste Fino do embedding
 
 **Executar o script de ajuste fino**
@@ -45,6 +86,7 @@ Para realizar o **fine-tuning** do modelo de embeddings **bge-small-en-v1.5**, u
   --output_dir "../models/boolq/embedding/"
 ```
 📌 Nota: Você pode modificar os parâmetros --epoch e --batch_size para ajustar o tempo de treinamento e o consumo de memória.
+📌 Nota: --name_dataset: teleqna, covid, clapnq, boolq.
 
 ## 🏆 Avaliação do Modelo de Embeddings  
 
@@ -79,7 +121,7 @@ Para realizar o **fine-tuning** do modelo de embeddings **bge-small-en-v1.5**, u
   --vector_store_path "../vector_stores/boolq/ft_vs_boolq_150_20"
 ```
 
-## RAG Inference 
+## RAG Adapter Inference 
 
 ```bash
 !python ../scripts/inference_rag.py \
@@ -93,7 +135,7 @@ Para realizar o **fine-tuning** do modelo de embeddings **bge-small-en-v1.5**, u
   --top_k 10 \
   --use_rag
 ```
-### Só phi-2
+### Só phi-2 sem Retriever
 
 ```bash
 !python ../scripts/inference_rag.py \
@@ -112,3 +154,15 @@ Para realizar o **fine-tuning** do modelo de embeddings **bge-small-en-v1.5**, u
 from utils.evaluate_inference import evaluate_answer
 evaluate_answer('boolq', '../results/boolq/full_ft_k10_boolq.csv')
 ```
+
+## Notebooks
+A pasta [notebooks](./notebooks/) contém notebooks de fine-tuning para cada conjunto de dados.
+
+## Experimentos
+A pasta [experiments](./experiments/) contém as diferentes configurações para avaliar nossa proposta.
+
+## Report WanDB
+ [WanDB-Report](https://api.wandb.ai/links/dinho15971-unicamp/f0nda1xb)
+
+## Results 
+ [resultados dos experimentos](https://drive.google.com/drive/folders/1iK9D_WIscWMUyBezEpgz_G2DPn4T89EK?usp=sharing)

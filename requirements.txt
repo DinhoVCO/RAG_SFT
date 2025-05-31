@@ -32,6 +32,7 @@ unstructured[docx]==0.17.2
 # Jupyter environment (optional, for notebooks)
 jupyter
 ipywidgets
+ipykernel
 
 #Evaluation
 ragas
