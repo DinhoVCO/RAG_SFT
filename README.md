@@ -161,3 +161,19 @@ A pasta [experiments](./experiments/) contém as diferentes configurações para
 
 ## Results 
  [resultados dos experimentos](https://drive.google.com/drive/folders/1iK9D_WIscWMUyBezEpgz_G2DPn4T89EK?usp=sharing)
+
+## Como Citar
+Se você encontrar este trabalho útil para sua pesquisa, por favor, considere citar nosso artigo:
+```bibtex
+@INPROCEEDINGS{247070,
+    AUTHOR="Ronaldinho Vega Centeno Olivera and Julio Dos Reis and Frances Santos and Allan M. de Souza",
+    TITLE="Aprimorando Geração Aumentada por Recuperação via Ajuste Fino Sequencial de Modelos de Linguagem Pequenos",
+    BOOKTITLE="SBBD 2025 - Full Papers () ",
+    ADDRESS="Fortaleza, CE, Brazil",
+    DAYS="29-2",
+    MONTH="sep",
+    YEAR="2025",
+    ABSTRACT="Modelos de linguagem (Language Models, LMs) se destacam em conhecimento geral, mas frequentemente enfrentam dificuldades em domínios especializados, nos quais a complexidade e a constante evolução representam desafios adicionais. Este estudo aprimora o desempenho de sistemas de Geração Aumentada por Recuperação (Retrieval-Augmented Generation, RAG) para a tarefa de Perguntas e Respostas (Question Answering, QA) por meio do ajuste sequencial dos componentes do RAG, utilizando modelos de linguagem pequenos (Small Language Models, SLMs) tanto para o modelo de embedding quanto para o modelo generativo. Nossa abordagem utiliza poucos recursos computacionais e melhora a efetividade geral em relação ao modelo base. A metodologia proposta, escalável e econômica, viabiliza a aplicação prática de sistemas RAG em diferentes domínios e tarefas.",
+    KEYWORDS="Information retrieval; Machine Learning, AI, data management and data systems; Specialized and domain-specific data management; Text mining and natural language processing",
+    URL="http://XXXXX/247070.pdf"
+}
