@@ -1,4 +1,4 @@
-# 📡 Aprimorando RAG com Modelos Leves  
+# 📡 Aprimorando Geração Aumentada por Recuperação via Ajuste Fino Sequencial de Modelos de Linguagem Pequenos 
 
 Os modelos de linguagem são eficazes em diversas tarefas de processamento de texto, mas enfrentam dificuldades em domínios especializados, como telecomunicações, devido à complexidade técnica e constante evolução dos padrões. Para solucionar esse problema, este estudo aprimora um sistema de **Recuperação e Geração Aumentada (RAG)** adaptado para responder perguntas sobre as especificações **3GPP**, um conjunto de normas fundamentais para redes móveis.  
 
